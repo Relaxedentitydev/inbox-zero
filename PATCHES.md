@@ -22,6 +22,7 @@ Patches that are bind-mounted or applied via compose live under `services/inbox-
 | **N-2** | `../docker-compose.yml` cron `profiles: [cron]` | Cron is opt-in (not on `--profile all`) to reduce Gmail quota burn. Documented in SETUP.md / quota-relief.sh. |
 | **N-3** | `../docker-compose.yml` + `../egress/` | `web` on `internal: true` only (no default route). `edge` (nginx) publishes `:3300`. Squid allow-lists Google APIs. `gateway-relay` (socat) exposes host `:18090` on the internal net. Hermes `:8642` not relayed / not allow-listed. `NODE_USE_ENV_PROXY=1` so Node fetch uses the proxy. |
 | **N-4** | Live + example `.env` | Telemetry/billing third-party keys blanked; `AI_SENDER_PATTERN_LEARNING_ENABLED=false` under quota relief; LLM base URL → Hermes privacy gateway. |
+| **N-6** | `apps/web/app/(app)/[emailAccountId]/m/**`, `(redirects)/m`, `SideNavWithTopNav` | Simple mobile Inbox + Agent surface at `/{emailAccountId}/m`. Reuses mail-engine hooks and existing Chat generative UI. Deploy needs a full fork image build (Dockerfile.nemuri only layers runtime patches onto the pinned upstream digest). |
 
 ## Intentionally not forked into source (yet)
 

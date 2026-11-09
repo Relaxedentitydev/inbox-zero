@@ -81,6 +81,9 @@ export function SideNavWithTopNav({
   )
     return children;
 
+  // Mobile surface (/[emailAccountId]/m/…) ships its own bottom-tab chrome.
+  if (segments[1] === "m") return children;
+
   return (
     <SidebarProvider
       defaultOpen={defaultOpen ? ["left-sidebar"] : []}
