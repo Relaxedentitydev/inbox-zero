@@ -48,6 +48,9 @@ describe("shouldStartMailEngine", () => {
     "/account/bulk-unsubscribe",
     "/account/smart-categories",
     "/account/debug/mail-queue",
+    "/account/m",
+    "/account/m/inbox",
+    "/account/m/agent",
   ])("starts browser sync for mail consumers on %s", (pathname) => {
     expect(shouldStartMailEngine({ pathname, desktopIpc: false })).toBe(true);
   });

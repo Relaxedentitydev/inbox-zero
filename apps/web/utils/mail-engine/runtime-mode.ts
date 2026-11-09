@@ -16,6 +16,8 @@ export function shouldStartMailEngine(input: {
 }): boolean {
   if (input.desktopIpc || input.browserRequested) return true;
   const segments = input.pathname?.split("/").filter(Boolean) ?? [];
+  // Mobile shell lives under /{accountId}/m/... — start the engine for any /m route.
+  if (segments.length >= 2 && segments[1] === "m") return true;
   if (segments.length === 2) {
     return [
       "mail",
