@@ -18,6 +18,20 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 describe("useEngineMailThreads", () => {
+  it("treats a missing mail client as loading when the query is enabled", async () => {
+    const { result } = renderHook(
+      () =>
+        useEngineMailThreads({
+          emailAccountId: "acc-1",
+          query: { type: "inbox" } as ThreadsQuery,
+        }),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(true));
+    expect(result.current.threads).toHaveLength(0);
+  });
+
   it("keeps the disabled empty result stable across query identity changes", async () => {
     const { result, rerender } = renderHook(
       ({ query }: { query: ThreadsQuery }) =>

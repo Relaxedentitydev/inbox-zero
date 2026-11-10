@@ -15,8 +15,10 @@ import { createRoutedBackendAdapter } from "@inboxzero/mail-core/protocol/routed
 import { createWasmSqliteDriver } from "@/utils/mail-engine/wasm-sqlite";
 import {
   browserMailEngineCapabilities,
+  MAIL_ENGINE_WORKER_START_MS,
   pageConnectivityOnline,
   readPageMaxPendingOperations,
+  rejectAfter,
   requestSyncUnlessOffline,
   shouldReleaseDeferredOnStart,
   type BrowserEngineStart,
@@ -118,9 +120,10 @@ async function createInTabEngine(
 async function createWorkerOwnedEngine(
   input: BrowserEngineStart,
 ): Promise<BrowserMailEngine> {
-  const worker = new Worker(new URL("./engine-worker.ts", import.meta.url), {
-    type: "module",
-  });
+  // Classic worker: Turbopack's bootstrap uses importScripts, which module
+  // workers do not support. Passing type:"module" is stripped by Turbopack
+  // but still avoided here so non-Turbopack builds match.
+  const worker = new Worker(new URL("./engine-worker.ts", import.meta.url));
   const pending = new Map<
     string,
     { resolve: (value: unknown) => void; reject: (error: Error) => void }
@@ -155,11 +158,22 @@ async function createWorkerOwnedEngine(
     pending.clear();
   });
 
-  await request(worker, pending, {
-    id: crypto.randomUUID(),
-    type: "start",
-    input,
-  });
+  try {
+    await Promise.race([
+      request(worker, pending, {
+        id: crypto.randomUUID(),
+        type: "start",
+        input,
+      }),
+      rejectAfter(
+        MAIL_ENGINE_WORKER_START_MS,
+        "mail engine worker start timed out",
+      ),
+    ]);
+  } catch (error) {
+    worker.terminate();
+    throw error;
+  }
 
   function observe<T>(
     kind: WorkerObserveKind,

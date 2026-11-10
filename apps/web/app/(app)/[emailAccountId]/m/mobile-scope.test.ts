@@ -3,6 +3,8 @@ import {
   mobileScopeToThreadsQuery,
   parseMobileScope,
 } from "@/app/(app)/[emailAccountId]/m/mobile-scope";
+import { threadsQueryToPredicate } from "@/utils/mail-engine/threads-query";
+import { mailSplitToThreadsQuery } from "@/utils/split-inbox/split-query";
 
 describe("parseMobileScope", () => {
   it("prefers label over folder and type", () => {
@@ -36,5 +38,24 @@ describe("mobileScopeToThreadsQuery", () => {
     expect(
       mobileScopeToThreadsQuery({ kind: "folder", id: "folder-1" }),
     ).toEqual({ folderId: "folder-1" });
+  });
+
+  it("matches the desktop All-split inbox query and predicate", () => {
+    const mobile = mobileScopeToThreadsQuery({ kind: "type", type: "inbox" });
+    const desktopAll = mailSplitToThreadsQuery({
+      id: "all",
+      name: "All",
+      matchAll: true,
+      filters: [],
+    });
+    expect(mobile).toEqual(desktopAll);
+    expect(mobile).toEqual({ type: "inbox" });
+    expect(threadsQueryToPredicate(mobile)).toEqual({
+      kind: "mailbox",
+      mailbox: "inbox",
+    });
+    expect(threadsQueryToPredicate(desktopAll)).toEqual(
+      threadsQueryToPredicate(mobile),
+    );
   });
 });

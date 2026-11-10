@@ -14,6 +14,17 @@ export function shouldReleaseDeferredOnStart(online?: boolean) {
   return online !== false;
 }
 
+// Turbopack's worker bootstrap can fail or hang before the start RPC
+// resolves; without a bound the page waits forever and never falls back
+// to the in-tab engine (so /m shows an empty inbox with no /api/mail traffic).
+export const MAIL_ENGINE_WORKER_START_MS = 5000;
+
+export function rejectAfter(ms: number, message: string): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(message)), ms);
+  });
+}
+
 export async function requestSyncUnlessOffline(
   online: boolean | undefined,
   sync: () => Promise<WorkAdmission>,

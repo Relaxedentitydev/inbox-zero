@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   browserMailEngineCapabilities,
+  MAIL_ENGINE_WORKER_START_MS,
   readPageMaxPendingOperations,
+  rejectAfter,
   requestSyncUnlessOffline,
   workerStartFence,
   shouldReleaseDeferredOnStart,
@@ -20,6 +22,22 @@ describe("browser mail engine capabilities", () => {
         "storage" in navigator &&
         "getDirectory" in navigator.storage,
     });
+  });
+});
+
+describe("rejectAfter", () => {
+  it("rejects after the bound used for worker start", async () => {
+    vi.useFakeTimers();
+    const pending = rejectAfter(
+      MAIL_ENGINE_WORKER_START_MS,
+      "mail engine worker start timed out",
+    );
+    const assertion = expect(pending).rejects.toThrow(
+      "mail engine worker start timed out",
+    );
+    await vi.advanceTimersByTimeAsync(MAIL_ENGINE_WORKER_START_MS);
+    await assertion;
+    vi.useRealTimers();
   });
 });
 

@@ -94,7 +94,9 @@ export function useEngineMailThreads({
     threads,
     hasRemoteResponse: mailbox.status !== "loading",
     searchError: undefined,
-    isLoading: enabled && Boolean(client) && mailbox.status === "loading",
+    // No client yet still means "loading" on mail routes — otherwise /m paints
+    // "No emails here." before MailEngineHost/MailCoverageGate can gate it.
+    isLoading: enabled && (!client || mailbox.status === "loading"),
     error: mailboxQueryError(mailbox.error),
     hasMore: mailbox.canLoadMore,
     isLoadingMore: mailbox.isLoadingMore,

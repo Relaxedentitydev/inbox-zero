@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { MobileInbox } from "@/app/(app)/[emailAccountId]/m/inbox/MobileInbox";
 import { checkUserOwnsEmailAccount } from "@/utils/email-account";
+import { MailEngineHost } from "@/utils/mail-engine/MailEngineHost";
 
 export default async function MobileInboxPage({
   params,
@@ -11,8 +12,10 @@ export default async function MobileInboxPage({
   await checkUserOwnsEmailAccount({ emailAccountId });
 
   return (
-    <Suspense>
-      <MobileInbox />
-    </Suspense>
+    <MailEngineHost>
+      <Suspense>
+        <MobileInbox />
+      </Suspense>
+    </MailEngineHost>
   );
 }
